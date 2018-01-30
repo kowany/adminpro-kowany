@@ -6,7 +6,8 @@ import { Usuario } from './../../models/usuario.model';
 import { URL_SERVICIOS } from './../../config/config';
 import { SubirArchivoService } from './../subir-archivo/subir-archivo.service';
 import 'rxjs/add/operator/map';
-import * as swal from 'sweetalert';
+
+declare var swal: any;
 
 @Injectable()
 export class UsuarioService {
@@ -14,8 +15,8 @@ export class UsuarioService {
   usuario: Usuario;
   token: string;
 
-  constructor( 
-    public http: HttpClient, 
+  constructor(
+    public http: HttpClient,
     public router: Router,
     public _subirArchivoService: SubirArchivoService
   ) {
@@ -71,7 +72,7 @@ export class UsuarioService {
                 return true;
               });
   }
-  
+
   login( usuario: Usuario, recordar: boolean = false ) {
     if ( recordar ) {
       localStorage.setItem( 'email', usuario.email );
@@ -80,7 +81,6 @@ export class UsuarioService {
     }
 
     const url = `${URL_SERVICIOS}/login`;
-    console.log ( usuario, recordar, url );
 
     return this.http.post( url, usuario )
                 .map( ( resp: any ) => {
@@ -99,39 +99,63 @@ export class UsuarioService {
 
     return this.http.post( url, usuario )
     .map( ( resp: any ) => {
-      // swal( 'Usuario creado', usuario.email, 'success' );
+       swal( 'Usuario creado', usuario.email, 'success' );
        return resp.usuario;
       });
     }
-    
+
     actualizarUsuario( usuario: Usuario ) {
-      usuario.role = this.usuario.role;
-      const url = `${URL_SERVICIOS}/usuario/${this.usuario._id}?token=${this.token}`;
-      console.log( url );
-      
+      // usuario.role = this.usuario.role;
+      const url = `${URL_SERVICIOS}/usuario/${usuario._id}?token=${this.token}`;
+
       return this.http.put( url, usuario )
         .map( ( resp: any ) => {
-          const usuarioDB = resp.usuario;
-          console.log( usuarioDB, this.token );
-         this.guardarStorage( usuarioDB._id, this.token , usuarioDB );
-  
+
+          if ( usuario._id === this.usuario._id ) {
+            const usuarioDB: Usuario = resp.usuario;
+            this.guardarStorage( usuarioDB._id, this.token , usuarioDB );
+          }
+
           swal( 'Usuario actualizado', usuario.nombre, 'success' );
-          
+
           return true;
         });
-        
+
       }
-      
+
       cambiarImagen( archivo: File, id: string ) {
         this._subirArchivoService.subirArchivo( archivo, 'usuarios', id )
         .then( (resp: any ) => {
           this.usuario.img = resp.usuario.img;
-          swal( 'Imagen actualizada', this.usuario.nombre, 'success' );
+          // swal( 'Imagen actualizada', this.usuario.nombre, 'success' );
           this.guardarStorage( id, this.token, this.usuario );
           })
           .catch( err => {
             console.error( err );
-          })
+          });
 
+  }
+
+  cargarUsuarios( desde: number = 0 ) {
+    const url = `${ URL_SERVICIOS }/usuario?desde=${ desde }`;
+
+    return this.http.get( url );
+  }
+
+  buscarUsuarios ( termino: string ) {
+    const url = `${ URL_SERVICIOS }/busqueda/coleccion/usuarios/${ termino }`;
+     return this.http.get( url )
+        .map( ( resp: any ) => resp.usuarios );
+
+  }
+
+  borrarUsuario ( id: string ) {
+    const url = `${URL_SERVICIOS}/usuario/${id}?token=${this.token}`;
+
+    return this.http.delete( url )
+        .map( resp => {
+          swal( 'Usuario borrado', 'El usuario ha sido borrado correctamente', 'success' );
+          return true;
+        })
   }
 }
