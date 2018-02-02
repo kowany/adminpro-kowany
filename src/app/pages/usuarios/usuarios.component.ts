@@ -16,7 +16,7 @@ export class UsuariosComponent implements OnInit {
   desde: number = 0;
   totalRegistros: number = 0;
   cargando: boolean = true;
-  
+
   constructor(
     public _usuarioService: UsuarioService,
     public _modalUploadService: ModalUploadService
@@ -91,7 +91,7 @@ export class UsuariosComponent implements OnInit {
               .subscribe( ( borrado: Boolean ) => {
                 console.log( borrado );
                 this.cargarUsuarios();
-              })
+              });
 
       }
     });

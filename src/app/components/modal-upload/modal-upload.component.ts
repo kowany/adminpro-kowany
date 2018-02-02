@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { SubirArchivoService } from './../../services/subir-archivo/subir-archivo.service';
 import { ModalUploadService } from './modal-upload.service';
 
@@ -11,7 +11,7 @@ export class ModalUploadComponent implements OnInit {
 
   imagenSubir: File;
   imagenTemp: string;
-
+  // @ViewChild('archivo') archivo: ElementRef;
 
   constructor(
     public _subirArchivoService: SubirArchivoService,
@@ -24,7 +24,6 @@ export class ModalUploadComponent implements OnInit {
   subirImagen() {
     this._subirArchivoService.subirArchivo( this.imagenSubir, this._modalUploadService.tipo, this._modalUploadService.id )
           .then( resp => {
-            
             this._modalUploadService.notificacion.emit( resp );
             this._modalUploadService.ocultarModal();
             this.cerrarModal();
@@ -38,6 +37,7 @@ export class ModalUploadComponent implements OnInit {
     this.imagenSubir = null;
     this.imagenTemp = null;
     this._modalUploadService.ocultarModal();
+    // this.archivo.nativeElement.innerHTML = '';
   }
   seleccionImagen( archivo: File ) {
 
@@ -59,7 +59,8 @@ export class ModalUploadComponent implements OnInit {
     const urlImagenTemp = reader.readAsDataURL(archivo);
 
     reader.onloadend = () => this.imagenTemp = reader.result;
-
+    
+    
   }
 
 }
